@@ -1,0 +1,78 @@
+
+#include "ThreadRepresent.h"
+
+ThreadRepresent::ThreadRepresent(void)
+{
+	m_State = THREAD_STATE_NON;
+}
+
+ThreadRepresent::~ThreadRepresent(void)
+{
+
+}
+
+/*implementation thread create function by each platform OS*/
+bool ThreadRepresent::MakeThread()
+{
+	
+	/*test for window*/
+	m_hThreadHandle = (unsigned long)CreateThread(NULL,0,ThreadRepresent::InnerThreadFunc,(void*)this,0,&m_nThreadID);
+
+	if(m_hThreadHandle)
+	{
+		m_State = THREAD_STATE_CREATED;
+	}
+	else
+	{
+		m_State = THREAD_STATE_STOP;
+		return false;
+	}
+	return true;
+	
+}
+
+void ThreadRepresent::RegisterThreadFunc(Fn pFn, void* param)
+{
+	m_Fn  = 	pFn;
+	m_pParam = param;
+}
+
+bool ThreadRepresent::Start()
+{
+	return true;
+}
+
+bool ThreadRepresent::Stop()
+{
+	return true;
+}
+
+void* ThreadRepresent::GetParam()
+{
+	return m_pParam;
+}
+
+Fn ThreadRepresent::GetFunction()
+{
+	return m_Fn;
+}
+
+
+void ThreadRepresent::SetState(unsigned int nState)
+{
+	m_State = nState;
+}
+
+unsigned long _stdcall ThreadRepresent::InnerThreadFunc(void* pParam)
+{
+	ThreadRepresent* pThis = (ThreadRepresent*)pParam;
+	
+	pThis->SetState(THREAD_STATE_RUNNING);
+
+	Fn pfunc = pThis->GetFunction();
+
+	(*pfunc)(pThis->GetParam());
+
+	return 0;
+}
+
